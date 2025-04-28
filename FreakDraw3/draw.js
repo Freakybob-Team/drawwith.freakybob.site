@@ -106,7 +106,7 @@ function initEventListeners() {
 
     document.getElementById("openGallery").addEventListener("click", openGallery);
     document.getElementById("closeGallery").addEventListener("click", closeGallery);
-    document.getElementById("quiackGallery").addEventListener("click", openGallery);
+    document.getElementById("quickGallery").addEventListener("click", openGallery);
 
     document.getElementById("clearAll").addEventListener("click", clearCanvas);
 
