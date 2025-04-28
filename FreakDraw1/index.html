@@ -1,0 +1,194 @@
+<html>
+
+<head>
+    <title> Freakdraw </title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&display=swap');
+
+        h1 {
+            text-align: center;
+            color: white;
+            transition: opacity 1s ease;
+        }
+
+        body {
+            background-color: black;
+            margin: 0;
+            overflow: hidden;
+            border: 5px solid #1b1b1b;
+            box-sizing: border-box;
+            width: 95vw;
+            height: 95vh;
+            position: absolute;
+            top: 2.5%;
+            left: 2.5%;
+        }
+
+        img {
+            position: absolute;
+            width: 70px;
+            height: auto;
+            left: 20px;
+            top: 20px;
+            filter: drop-shadow(3px 3px 5px rgba(255, 255, 255, 0.5));
+            pointer-events: auto;
+            z-index: 30;
+        }
+
+        .menu {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #1b1b1b;
+            border-radius: 25px;
+            padding: 10px 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 31;
+        }
+
+        .menu-item {
+            margin: 0 15px;
+            cursor: pointer;
+            color: white;
+            font-family: "Lato", sans-serif;
+            font-weight: 400;
+            font-style: normal;
+        }
+
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+            z-index: 1;
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="drawingCanvas"></canvas>
+    <audio id="music" src="https://archive.org/download/wii-fit-ost/15%20Yoga.mp3" loop></audio>
+    <img src="../assets/freaky (1).webp" id="freak">
+    <h1 id="h1"> drag freakybob around. have fun. </h1>
+    <div class="menu">
+        <div class="menu-item" id="pencil">Pencil</div>
+        <div class="menu-item" id="marker">Marker</div>
+        <div class="menu-item" id="wipe">Wipe</div>
+        <input type="color" id="colorPicker" value="#ffffff" style="margin-left: 15px;">
+    </div>
+
+    <script>
+        const img = document.getElementById("freak");
+        const music = document.getElementById("music");
+        const canvas = document.getElementById("drawingCanvas");
+        const ctx = canvas.getContext("2d");
+        const colorPicker = document.getElementById("colorPicker");
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth * 0.95;
+            canvas.height = window.innerHeight * 0.95;
+        }
+
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        let isDragging = false;
+        let offsetX, offsetY;
+        let lastX, lastY;
+        let currentTool = 'pencil';
+        let currentColor = "#ffffff";
+
+        img.addEventListener("mousedown", (e) => {
+            isDragging = true;
+            offsetX = e.clientX - img.offsetLeft;
+            offsetY = e.clientY - img.offsetTop;
+            lastX = img.offsetLeft + img.width / 2;
+            lastY = img.offsetTop + img.height / 2;
+        });
+        // below detects mouse movement
+        document.addEventListener("mousemove", (e) => {
+            if (isDragging) {
+                const bodyRect = document.body.getBoundingClientRect();
+                const imgRect = img.getBoundingClientRect();
+                let newLeft = e.clientX - offsetX;
+                let newTop = e.clientY - offsetY;
+
+                if (newLeft < 5) {
+                    newLeft = 5;
+                }
+                if (newLeft + imgRect.width > bodyRect.width) {
+                    newLeft = bodyRect.width - imgRect.width;
+                }
+                if (newTop < 5) {
+                    newTop = 5;
+                }
+                if (newTop + imgRect.height > bodyRect.height) {
+                    newTop = bodyRect.height - imgRect.height;
+                }
+                // end mouse movement detection
+                img.style.left = newLeft + "px";
+                img.style.top = newTop + "px";
+
+                ctx.strokeStyle = currentTool === 'marker' ? "rgba(" + hexToRgb(currentColor) + ", 0.5)" : currentColor;
+                ctx.lineWidth = currentTool === 'marker' ? 5 : 2;
+                // pencil code below
+                ctx.beginPath();
+                ctx.moveTo(lastX, lastY);
+                ctx.lineTo(newLeft + img.width / 2, newTop + img.height / 2);
+                ctx.stroke();
+                // pencil code ends
+                lastX = newLeft + img.width / 2;
+                lastY = newTop + img.height / 2;
+            }
+        });
+
+        document.addEventListener("mouseup", () => {
+            isDragging = false;
+        });
+
+        document.addEventListener("dragstart", (e) => e.preventDefault());
+
+        window.addEventListener('load', () => {
+            colorPicker.value = "#ffffff";
+            currentColor = "#ffffff";
+
+            music.play().catch(error => {
+                console.error('Error playing background music:', error);
+            });
+
+            setTimeout(() => {
+                const header = document.getElementById("h1");
+                header.style.opacity = 0;
+            }, 5000);
+        });
+
+        document.getElementById("wipe").addEventListener("click", () => {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        });
+
+        document.getElementById("pencil").addEventListener("click", () => {
+            currentTool = 'pencil';
+        });
+
+        document.getElementById("marker").addEventListener("click", () => {
+            currentTool = 'marker';
+        });
+
+        colorPicker.addEventListener("input", (e) => {
+            currentColor = e.target.value;
+        });
+
+        function hexToRgb(hex) {
+            let r = parseInt(hex.slice(1, 3), 16);
+            let g = parseInt(hex.slice(3, 5), 16);
+            let b = parseInt(hex.slice(5, 7), 16);
+            return `${r}, ${g}, ${b}`;
+        }
+    </script>
+</body>
+
+</html>
